@@ -16,7 +16,7 @@ data "template_file" "root_first" {
 data "template_file" "bucket_policy" {
     template = file("${path.module}/policies/bucket-policy.json")
 
-    vars {
+    vars = {
       bucket_name = local.primary_domain
       secret      = var.secret
     }
@@ -29,7 +29,7 @@ data "template_file" "bucket_policy" {
 data "template_file" "deploy_policy" {
     template = file("${path.module}/policies/deploy-policy.json")
 
-    vars {
+    vars = {
       bucket_arn = aws_s3_bucket.main.arn
     }
 }
