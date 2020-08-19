@@ -7,7 +7,6 @@ provider "aws" {
 module "s3-static-site" {
     source          = "../.."
     countries       = ["RU", "CN"]
-    enable_iam_user = false
     secret          = "ghhyryr678rhbjoh"
     www_is_main     = true
 
