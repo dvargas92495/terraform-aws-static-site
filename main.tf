@@ -59,7 +59,7 @@ resource "aws_s3_bucket" "main" {
     bucket = local.primary_domain
     policy = data.template_file.bucket_policy.rendered
 
-    website = {
+    website {
       index_document = "index.html"
       error_document = "404.html"
     }
@@ -71,7 +71,7 @@ resource "aws_s3_bucket" "redirect" {
     count  = length(local.redirect_domains)
     bucket = local.redirect_domains[count.index]
 
-    website = {
+    website {
       redirect_all_requests_to = aws_s3_bucket.main.id
     }
 
@@ -196,12 +196,12 @@ resource "aws_iam_user" "deploy" {
 
 resource "aws_iam_access_key" "deploy" {
     count = var.enable_iam_user ? 1 : 0
-    user  = aws_iam_user.deploy.name
+    user  = aws_iam_user.deploy[0].name
 }
 
 resource "aws_iam_user_policy" "deploy" {
     count  = var.enable_iam_user ? 1 : 0
     name   = "deploy"
-    user   = aws_iam_user.deploy.name
+    user   = aws_iam_user.deploy[0].name
     policy = data.template_file.deploy_policy.rendered
 }
