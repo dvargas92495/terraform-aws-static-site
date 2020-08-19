@@ -12,8 +12,7 @@ module "s3-static-site" {
     www_is_main     = true
 
     domains = [
-        "immel.co.uk",
-        "immel.io"
+        "example.davidvargas.me"
     ]
 
     cdn_settings = {
