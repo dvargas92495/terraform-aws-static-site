@@ -1,11 +1,11 @@
 # Templates can only handle strings, so convert to a string and join
 data "template_file" "www_first" {
-    count    = var.www_is_main
+    count    = var.www_is_main ? 1 : 0
     template = format("%s,%s", local.www_domains, join(",", var.domains))
 }
 
 data "template_file" "root_first" {
-    count    = "${1 - var.www_is_main}"
+    count    = var.www_is_main ? 0 : 1
     template = format("%s,%s", join(",", var.domains), local.www_domains)
 }
 
