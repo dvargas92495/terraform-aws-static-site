@@ -1,0 +1,12 @@
+name: Lint and Test
+on: pull_request
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+      - run: terraform init test/integration
+      - run: terraform plan test/integration
