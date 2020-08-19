@@ -50,9 +50,8 @@ locals {
       for domain in local.all_domains: join(".", slice(split(".", domain), length(split(".", domain)) - 2, length(split(".", domain))))
     ])
 
-    # Ditto here.  The order shouldn't change.
-    endpoints = [split(",", format("%s,%s", aws_s3_bucket.main.website_endpoint, 
-                                               join(",", aws_s3_bucket.redirect.*.website_endpoint)))]
+    endpoints = split(",", format("%s,%s", aws_s3_bucket.main.website_endpoint, 
+                                               join(",", aws_s3_bucket.redirect.*.website_endpoint)))
 }
 
 resource "aws_s3_bucket" "main" {
