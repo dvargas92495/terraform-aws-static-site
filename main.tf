@@ -46,9 +46,9 @@ locals {
     www_domains      = join(",", formatlist("www.%s", var.domains))
     redirect_domains = slice(local.all_domains, 1, length(local.all_domains))
 
-    # Ugly but we need a valid zone name for each domain to feed into the zone data source (i.e. without the "www" part).
-    # A map would have been better but we'll have to do with a list parallel to local.all_domains
-    zone_domain_name = split(",", replace(join(",", local.all_domains), "/(?i)www\\./", ""))
+    zone_domain_name = distinct([
+      for domain in local.all_domains: join(".", slice(split(".", domain), length(split(".", domain)) - 2, length(split(".", domain))))
+    ])
 
     # Ditto here.  The order shouldn't change.
     endpoints = [split(",", format("%s,%s", aws_s3_bucket.main.website_endpoint, 
