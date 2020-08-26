@@ -29,7 +29,7 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.main.arn}/*",
+      "arn:aws:s3:::${local.primary_domain}/*",
     ]
 
     condition {
