@@ -1,5 +1,3 @@
-provider "template" {}
-
 provider "aws" {
     region = "us-east-1"
 }
@@ -10,9 +8,7 @@ module "s3-static-site" {
     secret          = "ghhyryr678rhbjoh"
     www_is_main     = true
 
-    domains = [
-        "example.davidvargas.me"
-    ]
+    domain = "example.davidvargas.me"
 
     cdn_settings = {
         price_class              = "PriceClass_100"
