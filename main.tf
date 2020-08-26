@@ -1,62 +1,87 @@
-# Templates can only handle strings, so convert to a string and join
-data "template_file" "www_first" {
-    count    = var.www_is_main ? 1 : 0
-    template = format("%s,%s", local.www_domains, join(",", var.domains))
-}
-
-data "template_file" "root_first" {
-    count    = var.www_is_main ? 0 : 1
-    template = format("%s,%s", join(",", var.domains), local.www_domains)
-}
-
-# This policy is applied to the main S3 bucket.  It allows CloudFront access to
-# the bucket through the use of the user-agent field through which S3 and
-# CloudFront share a secret. This kind of policy is not necessary for the
-# redirect bucket since it doesn't store any objects, it just redirects.
-data "template_file" "bucket_policy" {
-    template = file("${path.module}/policies/bucket-policy.json")
-
-    vars = {
-      bucket_name = local.primary_domain
-      secret      = var.secret
-    }
-}
-
-# This policy is applied to the IAM user that handles deployments for the
-# static site. It basically allows full access to the main S3 bucket, and
-# allows the user to create CloudFront invalidations when the site is updated
-# so that the new content is rolled out quickly.
-data "template_file" "deploy_policy" {
-    template = file("${path.module}/policies/deploy-policy.json")
-
-    vars = {
-      bucket_arn = aws_s3_bucket.main.arn
-    }
-}
-
 data "aws_route53_zone" "zone" {
-    count = length(local.zone_domain_name)
-    name  = format("%s.", local.zone_domain_name[count.index])
+    name  = "${local.zone_domain_name}."
 }
 
 locals {
-    all_domains      = split(",", join(",", concat(data.template_file.www_first.*.rendered, 
-                                                      data.template_file.root_first.*.rendered)))
+    www_domain      = "www.${var.domain}"
+    all_domains      = var.www_is_main ? [
+      local.www_domain,
+      var.domain
+    ] : [
+      var.domain,
+      local.www_domain
+    ]
+
     primary_domain   = local.all_domains[0]
-    www_domains      = join(",", formatlist("www.%s", var.domains))
-    redirect_domains = slice(local.all_domains, 1, length(local.all_domains))
+    redirect_domain  = local.all_domains[1]
 
-    zone_domain_name = distinct([
-      for domain in local.all_domains: join(".", slice(split(".", domain), length(split(".", domain)) - 2, length(split(".", domain))))
-    ])
+    domain_parts = split(".", var.domain)
+    domain_length = length(local.domain_parts)
+    zone_domain_name = join(".", slice(local.domain_parts, local.domain_length - 2, local.domain_length))
 
-    endpoints = split(",", format("%s,%s", aws_s3_bucket.main.website_endpoint, 
-                                               join(",", aws_s3_bucket.redirect.*.website_endpoint)))
+    endpoints = [aws_s3_bucket.main.website_endpoint, aws_s3_bucket.redirect.website_endpoint]
+}
+
+data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${local.primary_domain}/*",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:UserAgent"
+
+      values = [var.secret]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "deploy_policy" {
+    statement {
+      actions = [
+        "s3:ListBucket"
+      ]
+
+      resources = [
+        aws_s3_bucket.main.arn
+      ]
+    }
+
+    statement {
+      actions = [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:GetObjectAcl",
+        "s3:ListBucket",
+        "s3:PutObject",
+        "s3:PutObjectAcl"
+      ]
+
+      resources = [
+        "${aws_s3_bucket.main.arn}/*"
+      ]
+    }
+
+    statement {
+      actions = [
+        "cloudfront:ListDistributions",
+        "cloudfront:CreateInvalidation"
+      ]
+
+      resources = [
+        "*"
+      ]
+    }
 }
 
 resource "aws_s3_bucket" "main" {
     bucket = local.primary_domain
-    policy = data.template_file.bucket_policy.rendered
+    policy = data.aws_iam_policy_document.bucket_policy.json
 
     website {
       index_document = "index.html"
@@ -67,8 +92,7 @@ resource "aws_s3_bucket" "main" {
 }
 
 resource "aws_s3_bucket" "redirect" {
-    count  = length(local.redirect_domains)
-    bucket = local.redirect_domains[count.index]
+    bucket = local.redirect_domain
 
     website {
       redirect_all_requests_to = aws_s3_bucket.main.id
@@ -79,7 +103,7 @@ resource "aws_s3_bucket" "redirect" {
 
 resource "aws_acm_certificate" "cert" {
     domain_name               = local.primary_domain
-    subject_alternative_names = local.redirect_domains
+    subject_alternative_names = [local.redirect_domain]
     validation_method         = "DNS"
     tags                      = var.tags
 }
@@ -89,7 +113,7 @@ resource "aws_route53_record" "cert" {
     name    = tolist(aws_acm_certificate.cert.domain_validation_options)[count.index].resource_record_name
     type    = tolist(aws_acm_certificate.cert.domain_validation_options)[count.index].resource_record_type
     records = [tolist(aws_acm_certificate.cert.domain_validation_options)[count.index].resource_record_value]
-    zone_id = data.aws_route53_zone.zone[0].zone_id
+    zone_id = data.aws_route53_zone.zone.zone_id
     ttl     = 300
 }
 
@@ -163,7 +187,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
 resource "aws_route53_record" "A" {
     count   = length(local.all_domains)
-    zone_id = element(data.aws_route53_zone.zone.*.zone_id, count.index)
+    zone_id = data.aws_route53_zone.zone.zone_id
     name    = local.all_domains[count.index]
     type    = "A"
 
@@ -176,7 +200,7 @@ resource "aws_route53_record" "A" {
 
 resource "aws_route53_record" "AAAA" {
     count   = length(local.all_domains)
-    zone_id = element(data.aws_route53_zone.zone.*.zone_id, count.index)
+    zone_id = data.aws_route53_zone.zone.zone_id
     name    = local.all_domains[count.index]
     type    = "AAAA"
 
@@ -202,5 +226,5 @@ resource "aws_iam_user_policy" "deploy" {
     count  = var.enable_iam_user ? 1 : 0
     name   = "deploy"
     user   = aws_iam_user.deploy[0].name
-    policy = data.template_file.deploy_policy.rendered
+    policy = data.aws_iam_policy_document.deploy_policy.json
 }
