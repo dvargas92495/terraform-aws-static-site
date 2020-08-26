@@ -1,7 +1,6 @@
 variable "domain" {
     type        = string
     description = "Domain to be built into a static website."
-    default     = []
 }
 
 variable "secret" {
