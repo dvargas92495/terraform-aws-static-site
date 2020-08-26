@@ -42,12 +42,6 @@ data "aws_iam_policy_document" "bucket_policy" {
 }
 
 data "aws_iam_policy_document" "deploy_policy" {
-    template = file("${path.module}/policies/deploy-policy.json")
-
-    vars = {
-      bucket_arn = aws_s3_bucket.main.arn
-    }
-
     statement {
       actions = [
         "s3:ListBucket"
