@@ -15,7 +15,7 @@ locals {
     primary_domain   = local.all_domains[0]
     redirect_domain  = local.all_domains[1]
 
-    domain_parts = split(".", domain)
+    domain_parts = split(".", var.domain)
     domain_length = length(local.domain_parts)
     zone_domain_name = join(".", slice(local.domain_parts, local.domain_length - 2, local.domain_length))
 
