@@ -87,6 +87,7 @@ resource "aws_s3_bucket" "main" {
       index_document = "index.html"
       error_document = "404.html"
     }
+    force_destroy = true 
 
     tags = var.tags
 }
@@ -97,6 +98,7 @@ resource "aws_s3_bucket" "redirect" {
     website {
       redirect_all_requests_to = aws_s3_bucket.main.id
     }
+    force_destroy = true 
 
     tags = var.tags
 }
