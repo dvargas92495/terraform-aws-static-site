@@ -38,6 +38,11 @@ data "aws_iam_policy_document" "bucket_policy" {
 
       values = [var.secret]
     }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
   }
 }
 
