@@ -101,9 +101,7 @@ resource "aws_s3_bucket" "main" {
       allowed_methods = [
         "GET",
       ]
-      allowed_origins = [
-        "https://roamresearch.com",
-      ]
+      allowed_origins = var.allowed_origins
       expose_headers  = []
     }
 
