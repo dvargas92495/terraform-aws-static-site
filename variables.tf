@@ -38,3 +38,9 @@ variable "countries" {
     description = "The ISO 3166-alpha-2 country codes of the countries to be allowed or restricted."
     default     = []
 }
+
+variable "allowed_origins" {
+    type        = list
+    description = "Other origins allowed to access items from the bucket."
+    default     = []
+}
