@@ -1,3 +1,8 @@
+provider "aws" {
+  region = "us-east-1"
+  alias = "us-east-1"
+}
+
 data "aws_route53_zone" "zone" {
     name  = "${local.zone_domain_name}."
 }
@@ -124,6 +129,7 @@ resource "aws_acm_certificate" "cert" {
     subject_alternative_names = [local.redirect_domain]
     validation_method         = "DNS"
     tags                      = var.tags
+    provider                  = aws.us-east-1
 }
 
 resource "aws_route53_record" "cert" {
