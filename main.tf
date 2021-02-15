@@ -89,7 +89,7 @@ resource "aws_s3_bucket" "main" {
     policy = data.aws_iam_policy_document.bucket_policy.json
 
     website {
-      index_document = "index.html"
+      index_document = var.index
       error_document = "404.html"
     }
     force_destroy = true 
