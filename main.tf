@@ -144,6 +144,7 @@ resource "aws_route53_record" "cert" {
 resource "aws_acm_certificate_validation" "cert" {
     certificate_arn         = aws_acm_certificate.cert.arn
     validation_record_fqdns = tolist(aws_route53_record.cert.*.fqdn)
+    provider                = aws.us-east-1
 
     timeouts {
       create = "2h"
