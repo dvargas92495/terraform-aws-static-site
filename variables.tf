@@ -50,3 +50,9 @@ variable "index" {
     description = "Index page for the website"
     default     = "index.html"
 }
+
+variable "error_document" {
+    type        = string
+    description = "Error page for the website"
+    default     = "404.html"
+}

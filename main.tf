@@ -95,7 +95,7 @@ resource "aws_s3_bucket" "main" {
 
     website {
       index_document = var.index
-      error_document = "404.html"
+      error_document = var.error_document
     }
     force_destroy = true 
 
@@ -212,7 +212,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     custom_error_response {
       error_code = 404
       response_code = 200
-      response_page_path = "/404.html"
+      response_page_path = "/${var.error_document}"
     }
 
     custom_error_response {
