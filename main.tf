@@ -1,3 +1,8 @@
+// CloudFront certificates have to be requested in us-east-1
+provider "aws" {
+  alias = "us-east-1"
+}
+
 data "aws_route53_zone" "zone" {
     name  = "${local.zone_domain_name}."
 }
@@ -89,8 +94,8 @@ resource "aws_s3_bucket" "main" {
     policy = data.aws_iam_policy_document.bucket_policy.json
 
     website {
-      index_document = "index.html"
-      error_document = "404.html"
+      index_document = var.index
+      error_document = var.error_document
     }
     force_destroy = true 
 
@@ -124,6 +129,7 @@ resource "aws_acm_certificate" "cert" {
     subject_alternative_names = [local.redirect_domain]
     validation_method         = "DNS"
     tags                      = var.tags
+    provider                  = aws.us-east-1
 }
 
 resource "aws_route53_record" "cert" {
@@ -138,6 +144,7 @@ resource "aws_route53_record" "cert" {
 resource "aws_acm_certificate_validation" "cert" {
     certificate_arn         = aws_acm_certificate.cert.arn
     validation_record_fqdns = tolist(aws_route53_record.cert.*.fqdn)
+    provider                = aws.us-east-1
 
     timeouts {
       create = "2h"
@@ -205,13 +212,13 @@ resource "aws_cloudfront_distribution" "cdn" {
     custom_error_response {
       error_code = 404
       response_code = 200
-      response_page_path = "/404.html"
+      response_page_path = "/${var.error_document}"
     }
 
     custom_error_response {
       error_code = 403
       response_code = 200
-      response_page_path = "/index.html"
+      response_page_path = "/${var.index}"
     }
 }
 

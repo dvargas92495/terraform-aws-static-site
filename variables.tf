@@ -44,3 +44,15 @@ variable "allowed_origins" {
     description = "Other origins allowed to access items from the bucket."
     default     = []
 }
+
+variable "index" {
+    type        = string
+    description = "Index page for the website"
+    default     = "index.html"
+}
+
+variable "error_document" {
+    type        = string
+    description = "Error page for the website"
+    default     = "404.html"
+}

@@ -7,4 +7,8 @@ module "s3-static-site" {
     
     secret          = "ghhyryr678rhbjoh"
     domain = "example.davidvargas.me"
+
+    providers = {
+        aws.us-east-1 = aws
+    }
 }
