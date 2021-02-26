@@ -1,5 +1,5 @@
+// CloudFront certificates have to be requested in us-east-1
 provider "aws" {
-  region = "us-east-1"
   alias = "us-east-1"
 }
 
