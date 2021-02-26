@@ -59,6 +59,8 @@ module "aws_static_site" {
   - `max_ttl` - the maximum amount of time, in seconds, that objects stay in CloudFront cache. Defaults to 1 year. Further details of all the TTL settings can be found in the AWS CloudFront [documentation.](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Expiration.html)
 - `countries` is a list of countries in [ISO 3166-alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements) format that the CloudFront `restriction_type` applies to.
 - `allowed_origins` is a list of origins to allow getting items from the S3 bucket.
+- `index` is the index page for the website. Defaults to `index.html`.
+- `error_page` is the error page for the website. Defaults to `404.html`.
 
 ## Outputs
 
