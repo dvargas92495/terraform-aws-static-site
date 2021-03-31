@@ -20,5 +20,5 @@ output "route53_zone_id" {
 
 output "cloudfront_arn" {
   description = "The cloudfront arn of the main distribution"
-  value       = aws_cloudfront_distribution.cdn.arn
+  value       = aws_cloudfront_distribution.cdn[0].arn
 }
