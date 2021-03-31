@@ -68,6 +68,7 @@ module "aws_static_site" {
 - `deploy-secret` - AWS secret access key of the deploy user
 - `bucket-name` - Name of the primary S3 bucket.
 - `route53_zone_id` - The zone id of the given route53 domain
+- `cloudfront_arn` - The ARN of the main cloudfront distribution
 
 ## Details
 

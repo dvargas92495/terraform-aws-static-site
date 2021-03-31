@@ -17,3 +17,8 @@ output "route53_zone_id" {
   description = "The zone id of the given route53 domain"
   value       = data.aws_route53_zone.zone.zone_id
 }
+
+output "cloudfront_arn" {
+  description = "The cloudfront arn of the main distribution"
+  value       = aws_cloudfront_distribution.cdn.arn
+}
