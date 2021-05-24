@@ -19,7 +19,7 @@ locals {
     primary_domain    = local.all_domains[0]
     redirect_domains  = slice(local.all_domains, 1, length(local.all_domains))
     zone_domain_names = {
-      for d in local.all_domains: d => join(".", slice(split(".", var.domain), length(split(".", var.domain)) - 2, length(split(".", var.domain))))
+      for d in local.all_domains: d => join(".", slice(split(".", d), length(split(".", d)) - 2, length(split(".", d))))
     }
 }
 
