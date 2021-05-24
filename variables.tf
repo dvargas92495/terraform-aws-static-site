@@ -3,6 +3,11 @@ variable "domain" {
     description = "Domain to be built into a static website."
 }
 
+variable "redirects" {
+    type        = string
+    description = "List of domains that redirect to the main domain"
+}
+
 variable "secret" {
     type        = string
     description = "A secret string between CloudFront and S3 to control access."
