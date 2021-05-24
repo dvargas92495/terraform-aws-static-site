@@ -133,6 +133,10 @@ resource "aws_acm_certificate" "cert" {
     validation_method         = "DNS"
     tags                      = var.tags
     provider                  = aws.us-east-1
+    
+    lifecycle {
+      create_before_destroy = true
+    }
 }
 
 resource "aws_route53_record" "cert" {
