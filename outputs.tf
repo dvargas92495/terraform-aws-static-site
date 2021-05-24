@@ -15,7 +15,7 @@ output "bucket-name" {
 
 output "route53_zone_id" {
   description = "The zone id of the given route53 domain"
-  value       = data.aws_route53_zone.zone[local.zone_domain_names[0]].zone_id
+  value       = data.aws_route53_zone.zone[local.zone_domain_names[local.primary_domain]].zone_id
 }
 
 output "cloudfront_arn" {

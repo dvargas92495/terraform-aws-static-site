@@ -164,7 +164,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     tags            = var.tags
 
     origin {
-      domain_name = count.index ? aws_s3_bucket.main.website_endpoint : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].website_endpoint
+      domain_name = count.index == 0 ? aws_s3_bucket.main.website_endpoint : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].website_endpoint
       origin_id   = format("S3-%s", local.all_domains[count.index])
 
       custom_origin_config {
