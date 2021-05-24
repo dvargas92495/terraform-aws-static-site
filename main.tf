@@ -3,28 +3,29 @@ provider "aws" {
   alias = "us-east-1"
 }
 
-data "aws_route53_zone" "zone" {
-    name  = "${local.zone_domain_name}."
-}
-
 locals {
     www_domain      = "www.${var.domain}"
-    all_domains      = var.www_is_main ? [
+    all_redirects   = flatten([
+      for r in var.redirects: [r, "www.${r}"]
+    ]) 
+    all_domains      = concat(var.www_is_main ? [
       local.www_domain,
       var.domain
     ] : [
       var.domain,
       local.www_domain
-    ]
+    ], local.all_redirects)
 
-    primary_domain   = local.all_domains[0]
-    redirect_domain  = local.all_domains[1]
+    primary_domain    = local.all_domains[0]
+    redirect_domains  = slice(local.all_domains, 1, length(local.all_domains))
+    zone_domain_names = {
+      for d in local.all_domains: d => join(".", slice(split(".", var.domain), length(split(".", var.domain)) - 2, length(split(".", var.domain))))
+    }
+}
 
-    domain_parts = split(".", var.domain)
-    domain_length = length(local.domain_parts)
-    zone_domain_name = join(".", slice(local.domain_parts, local.domain_length - 2, local.domain_length))
-
-    endpoints = [aws_s3_bucket.main.website_endpoint, aws_s3_bucket.redirect.website_endpoint]
+data "aws_route53_zone" "zone" {
+    for_each = toset(values(local.zone_domain_names))
+    name     = "${each.value}."
 }
 
 data "aws_iam_policy_document" "bucket_policy" {
@@ -115,7 +116,8 @@ resource "aws_s3_bucket" "main" {
 }
 
 resource "aws_s3_bucket" "redirect" {
-    bucket = local.redirect_domain
+    for_each = toset(local.redirect_domains)
+    bucket = each.value
 
     website {
       redirect_all_requests_to = aws_s3_bucket.main.id
@@ -127,7 +129,7 @@ resource "aws_s3_bucket" "redirect" {
 
 resource "aws_acm_certificate" "cert" {
     domain_name               = local.primary_domain
-    subject_alternative_names = [local.redirect_domain]
+    subject_alternative_names = local.redirect_domains
     validation_method         = "DNS"
     tags                      = var.tags
     provider                  = aws.us-east-1
@@ -162,7 +164,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     tags            = var.tags
 
     origin {
-      domain_name = local.endpoints[count.index]
+      domain_name = count.index ? aws_s3_bucket.main.website_endpoint : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].website_endpoint
       origin_id   = format("S3-%s", local.all_domains[count.index])
 
       custom_origin_config {
@@ -225,7 +227,7 @@ resource "aws_cloudfront_distribution" "cdn" {
 
 resource "aws_route53_record" "A" {
     count   = length(local.all_domains)
-    zone_id = data.aws_route53_zone.zone.zone_id
+    zone_id = data.aws_route53_zone.zone[local.zone_domain_names[local.all_domains[count.index]]].zone_id
     name    = local.all_domains[count.index]
     type    = "A"
 
@@ -238,7 +240,7 @@ resource "aws_route53_record" "A" {
 
 resource "aws_route53_record" "AAAA" {
     count   = length(local.all_domains)
-    zone_id = data.aws_route53_zone.zone.zone_id
+    zone_id = data.aws_route53_zone.zone[local.zone_domain_names[local.all_domains[count.index]]].zone_id
     name    = local.all_domains[count.index]
     type    = "AAAA"
 
