@@ -4,8 +4,9 @@ variable "domain" {
 }
 
 variable "redirects" {
-    type        = string
+    type        = list<string>
     description = "List of domains that redirect to the main domain"
+    default     = []
 }
 
 variable "secret" {
