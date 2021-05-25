@@ -227,6 +227,10 @@ resource "aws_cloudfront_distribution" "cdn" {
       response_code = 200
       response_page_path = "/${var.index}"
     }
+
+    depends_on = [
+      aws_acm_certificate_validation.cert
+    ]
 }
 
 resource "aws_route53_record" "A" {
