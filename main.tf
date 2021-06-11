@@ -4,6 +4,7 @@ provider "aws" {
 }
 
 locals {
+    domain_formatted = replace(var.domain, ".", "-")
     www_domain      = "www.${var.domain}"
     all_redirects   = flatten([
       for r in var.redirects: [r, "www.${r}"]
@@ -159,6 +160,83 @@ resource "aws_acm_certificate_validation" "cert" {
     }
 }
 
+data "archive_file" "viewer-request" {
+  type        = "zip"
+  output_path = "./viewer-request.zip"
+
+  source {
+    content   = "export const handler = (e, _, c) => c(null, e.Records[0].cf.request)"
+    filename  = "viewer-request.js"
+  }
+}
+
+data "archive_file" "origin-request" {
+  type        = "zip"
+  output_path = "./origin-request.zip"
+
+  source {
+    content   = "export const handler = (e, _, c) => c(null, e.Records[0].cf.request)"
+    filename  = "origin-request.js"
+  }
+}
+
+data "aws_iam_policy_document" "assume_lambda_edge_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type = "Service"
+      identifiers = [
+        "lambda.amazonaws.com", 
+        "edgelambda.amazonaws.com"
+      ]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "lambda_logs_policy_doc" {
+  statement {
+    effect    = "Allow"
+    resources = ["*"]
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:CreateLogGroup"
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "logs_role_policy" {
+  name   = "${local.domain_formatted}-lambda-cloudfront"
+  role   = aws_iam_role.cloudfront_lambda.id
+  policy = data.aws_iam_policy_document.lambda_logs_policy_doc.json
+}
+
+resource "aws_iam_role" "cloudfront_lambda" {
+  name = "${local.domain_formatted}-lambda-cloudfront"
+  tags = var.tags
+  assume_role_policy = data.aws_iam_policy_document.assume_lambda_edge_policy.json
+}
+
+resource "aws_lambda_function" "viewer_request" {
+  function_name    = "${local.domain_formatted}_viewer-request"
+  role             = aws_iam_role.cloudfront_lambda.arn
+  handler          = "viewer-request.handler"
+  runtime          = "nodejs12.x"
+  publish          = true
+  tags             = var.tags
+  filename         = "viewer-request.zip"
+}
+
+resource "aws_lambda_function" "origin_request" {
+  function_name    = "${local.domain_formatted}_origin-request"
+  role             = aws_iam_role.cloudfront_lambda.arn
+  handler          = "origin-request.handler"
+  runtime          = "nodejs12.x"
+  publish          = true
+  tags             = var.tags
+  filename         = "origin-request.zip"
+}
+
 resource "aws_cloudfront_distribution" "cdn" {
     count           = length(local.all_domains)
     aliases         = [local.all_domains[count.index]]
@@ -214,6 +292,18 @@ resource "aws_cloudfront_distribution" "cdn" {
         cookies {
           forward = "none"
         }
+      }
+
+      lambda_function_association {
+        event_type   = "viewer-request"
+        lambda_arn   = aws_lambda_function.viewer_request.qualified_arn
+        include_body = false
+      }
+
+      lambda_function_association {
+        event_type   = "origin-request"
+        lambda_arn   = aws_lambda_function.origin_request.qualified_arn
+        include_body = false
       }
     }
 
