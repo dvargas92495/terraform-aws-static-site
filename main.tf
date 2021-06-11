@@ -165,7 +165,7 @@ data "archive_file" "viewer-request" {
   output_path = "./viewer-request.zip"
 
   source {
-    content   = "export const handler = (e, _, c) => c(null, e.Records[0].cf.request)"
+    content   = "module.exports.handler = (e, _, c) => c(null, e.Records[0].cf.request)"
     filename  = "viewer-request.js"
   }
 }
@@ -175,7 +175,7 @@ data "archive_file" "origin-request" {
   output_path = "./origin-request.zip"
 
   source {
-    content   = "export const handler = (e, _, c) => c(null, e.Records[0].cf.request)"
+    content   = "module.exports.handler = (e, _, c) => c(null, e.Records[0].cf.request)"
     filename  = "origin-request.js"
   }
 }
