@@ -91,6 +91,17 @@ data "aws_iam_policy_document" "deploy_policy" {
         "*"
       ]
     }
+
+    statement {
+      actions = [
+        "lambda:UpdateFunctionCode"
+      ]
+
+      resources = [
+        aws_lambda_function.origin_request.arn,
+        aws_lambda_function.viewer_request.arn,
+      ]
+    }
 }
 
 resource "aws_s3_bucket" "main" {
