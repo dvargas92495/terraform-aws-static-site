@@ -48,7 +48,7 @@ variable "countries" {
 variable "allowed_origins" {
     type        = list(string)
     description = "Other origins allowed to access items from the bucket."
-    default     = []
+    default     = ["*"]
 }
 
 variable "index" {
