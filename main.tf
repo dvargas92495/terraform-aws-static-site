@@ -1,14 +1,3 @@
-// CloudFront certificates have to be requested in us-east-1
-terraform {
-  required_version = ">= 0.15"
-  required_providers {
-    aws = {
-      version               = ">= 3.0.0"
-      configuration_aliases = [aws.us-east-1]
-    }
-  }
-}
-
 locals {
     domain_formatted = replace(var.domain, ".", "-")
     www_domain      = "www.${var.domain}"
@@ -151,7 +140,6 @@ resource "aws_acm_certificate" "cert" {
     subject_alternative_names = local.redirect_domains
     validation_method         = "DNS"
     tags                      = var.tags
-    provider                  = aws.us-east-1
     
     lifecycle {
       create_before_destroy = true
@@ -170,7 +158,6 @@ resource "aws_route53_record" "cert" {
 resource "aws_acm_certificate_validation" "cert" {
     certificate_arn         = aws_acm_certificate.cert.arn
     validation_record_fqdns = tolist(aws_route53_record.cert.*.fqdn)
-    provider                = aws.us-east-1
 
     timeouts {
       create = "2h"
