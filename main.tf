@@ -1,6 +1,6 @@
 // CloudFront certificates have to be requested in us-east-1
 terraform {
-  required_version = ">= 0.15"
+  required_version = ">= 1.0"
   required_providers {
     aws = {
       version               = ">= 3.0.0"
