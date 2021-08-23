@@ -28,13 +28,13 @@ variable "enable_iam_user" {
 }
 
 variable "cdn_settings" {
-    type        = map
+    type        = map(string)
     description = "A map containing configurable CloudFront CDN settings."
     default     = {}
 }
 
 variable "tags" {
-    type        = map
+    type        = map(string)
     description = "A map of tags to add to all resources"
     default     = {}
 }
