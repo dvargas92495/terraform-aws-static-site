@@ -251,10 +251,7 @@ resource "aws_lambda_function" "viewer_request" {
   publish          = true
   tags             = var.tags
   filename         = "viewer-request.zip"
-
-  depends_on  = [
-    data.archive_file.viewer-request,
-  ]
+  source_code_hash = data.archive_file.viewer-request.output_base64sha256
 }
 
 resource "aws_lambda_function" "origin_request" {
@@ -265,10 +262,7 @@ resource "aws_lambda_function" "origin_request" {
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
-
-  depends_on  = [
-    data.archive_file.origin-request,
-  ]
+  source_code_hash = data.archive_file.origin-request.output_base64sha256
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
