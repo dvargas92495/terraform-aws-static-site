@@ -192,8 +192,8 @@ data "archive_file" "origin-request" {
 
   source {
     content   = <<-EOT
-      module.exports.handler = (e, _, c) => {
-        var request = e.Records[0].cf.request;
+      module.exports.handler = (event, _, c) => {
+        const request = event.Records[0].cf.request;
         const olduri = request.uri;
         if (olduri !== "/index.html") {
           const newuri = "/" + olduri + (olduri.includes(".") ? "" : ".html");
@@ -251,6 +251,10 @@ resource "aws_lambda_function" "viewer_request" {
   publish          = true
   tags             = var.tags
   filename         = "viewer-request.zip"
+
+  depends_on  = [
+    data.archive_file.viewer-request,
+  ]
 }
 
 resource "aws_lambda_function" "origin_request" {
@@ -261,6 +265,10 @@ resource "aws_lambda_function" "origin_request" {
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
+
+  depends_on  = [
+    data.archive_file.origin-request,
+  ]
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
