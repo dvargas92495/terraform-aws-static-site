@@ -191,7 +191,17 @@ data "archive_file" "origin-request" {
   output_path = "./origin-request.zip"
 
   source {
-    content   = "module.exports.handler = (e, _, c) => c(null, e.Records[0].cf.request)"
+    content   = <<-EOT
+      module.exports.handler = (e, _, c) => {
+        var request = e.Records[0].cf.request;
+        const olduri = request.uri;
+        if (olduri !== "/index.html") {
+          const newuri = "/" + olduri + (olduri.includes(".") ? "" : ".html");
+          request.uri = encodeURI(newuri);
+        }
+        c(null, request);
+      }
+    EOT
     filename  = "origin-request.js"
   }
 }
