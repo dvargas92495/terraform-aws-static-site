@@ -195,8 +195,11 @@ data "archive_file" "origin-request" {
       module.exports.handler = (event, _, c) => {
         const request = event.Records[0].cf.request;
         const olduri = request.uri;
-        if (olduri !== "/index.html") {
-          const newuri = "/" + olduri + (olduri.includes(".") ? "" : ".html");
+        if (/\/$/.test(olduri)) {
+          const newuri = olduri + "index.html";
+          request.uri = encodeURI(newuri);
+        } else if (!/\./.test(olduri)) {
+          const newuri = olduri + ".html";
           request.uri = encodeURI(newuri);
         }
         c(null, request);
