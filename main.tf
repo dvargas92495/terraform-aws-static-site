@@ -325,16 +325,13 @@ resource "aws_cloudfront_distribution" "cdn" {
         }
       }
 
-      lambda_function_association {
-        event_type   = "viewer-request"
-        lambda_arn   = aws_lambda_function.viewer_request.qualified_arn
-        include_body = false
-      }
-
-      lambda_function_association {
-        event_type   = "origin-request"
-        lambda_arn   = aws_lambda_function.origin_request.qualified_arn
-        include_body = false
+      dynamic "lambda_function_association" {
+        for_each = count.index == 0 ? ["viewer-request", "origin-request"] : []
+        content {
+          event_type   = lambda_function_association.value
+          lambda_arn   = aws_lambda_function[replace(lambda_function_association, "-", "_")].qualified_arn
+          include_body = false
+        }
       }
     }
 
