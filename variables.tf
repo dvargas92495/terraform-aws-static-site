@@ -3,16 +3,15 @@ variable "domain" {
     description = "Domain to be built into a static website."
 }
 
+variable "secret" {
+    type        = string
+    description = "A secret string between CloudFront and S3 to control access."
+}
+
 variable "redirects" {
     type        = list(string)
     description = "List of domains that redirect to the main domain"
     default     = []
-}
-
-variable "secret" {
-    type        = string
-    description = "A secret string between CloudFront and S3 to control access."
-    default     = ""
 }
 
 variable "www_is_main" {
