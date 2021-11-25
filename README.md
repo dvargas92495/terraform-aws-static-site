@@ -69,6 +69,7 @@ module "aws_static_site" {
 - `bucket-name` - Name of the primary S3 bucket.
 - `route53_zone_id` - The zone id of the given route53 domain
 - `cloudfront_arn` - The ARN of the main cloudfront distribution
+- `cloudfront_distribution_id` - The Distribution Id of the main Cloudfront Distribution
 
 ## Details
 
