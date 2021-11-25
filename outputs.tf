@@ -22,3 +22,8 @@ output "cloudfront_arn" {
   description = "The cloudfront arn of the main distribution"
   value       = aws_cloudfront_distribution.cdn[0].arn
 }
+
+output "cloudfront_distribution_id" {
+  description = "The Distribution Id of the main Cloudfront Distribution"
+  value       = aws_cloudfront_distribution.cdn[0].id
+}
