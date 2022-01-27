@@ -99,7 +99,8 @@ data "aws_iam_policy_document" "deploy_policy" {
 
     statement {
       actions = [
-        "lambda:UpdateFunctionCode"
+        "lambda:UpdateFunctionCode",
+        "lambda:GetFunction"
       ]
 
       resources = [
