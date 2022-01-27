@@ -89,7 +89,9 @@ data "aws_iam_policy_document" "deploy_policy" {
       actions = [
         "cloudfront:ListDistributions",
         "cloudfront:CreateInvalidation",
-        "cloudfront:GetInvalidation"
+        "cloudfront:GetInvalidation",
+        "cloudfront:UpdateDistribution",
+        "cloudfront:GetDistribution"
       ]
 
       resources = [
