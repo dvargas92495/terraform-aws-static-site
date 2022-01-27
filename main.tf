@@ -108,6 +108,8 @@ data "aws_iam_policy_document" "deploy_policy" {
       resources = [
         aws_lambda_function.origin_request.arn,
         aws_lambda_function.viewer_request.arn,
+        "${aws_lambda_function.origin_request.arn}:*",
+        "${aws_lambda_function.viewer_request.arn}:*"
       ]
     }
 }
