@@ -251,22 +251,20 @@ resource "aws_lambda_function" "viewer_request" {
   function_name    = "${local.domain_formatted}_viewer-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "viewer-request.handler"
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   publish          = true
   tags             = var.tags
   filename         = "viewer-request.zip"
-  source_code_hash = data.archive_file.viewer-request.output_base64sha256
 }
 
 resource "aws_lambda_function" "origin_request" {
   function_name    = "${local.domain_formatted}_origin-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "origin-request.handler"
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
-  source_code_hash = data.archive_file.origin-request.output_base64sha256
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
