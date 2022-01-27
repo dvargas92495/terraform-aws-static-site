@@ -30,6 +30,8 @@ locals {
     }
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_route53_zone" "zone" {
     for_each = toset(values(local.zone_domain_names))
     name     = "${each.value}."
@@ -87,7 +89,16 @@ data "aws_iam_policy_document" "deploy_policy" {
 
     statement {
       actions = [
-        "cloudfront:ListDistributions",
+        "cloudfront:ListDistributions"
+      ]
+
+      resources = [
+        "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution"
+      ]
+    }
+
+    statement {
+      actions = [
         "cloudfront:CreateInvalidation",
         "cloudfront:GetInvalidation",
         "cloudfront:UpdateDistribution",
@@ -95,14 +106,15 @@ data "aws_iam_policy_document" "deploy_policy" {
       ]
 
       resources = [
-        "*"
+        aws_cloudfront_distribution.cdn[0].arn
       ]
     }
 
     statement {
       actions = [
         "lambda:UpdateFunctionCode",
-        "lambda:GetFunction"
+        "lambda:GetFunction",
+        "lambda:EnableReplication*"
       ]
 
       resources = [
