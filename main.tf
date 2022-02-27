@@ -246,7 +246,8 @@ data "aws_iam_policy_document" "lambda_logs_policy_doc" {
     actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "logs:CreateLogGroup"
+      "logs:CreateLogGroup",
+      "lambda:InvokeFunction",
     ]
   }
 }
