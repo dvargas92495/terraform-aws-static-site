@@ -61,3 +61,9 @@ variable "error_document" {
     description = "Error page for the website"
     default     = "404.html"
 }
+
+variable "origin_timeout" {
+  type        = number
+  description = "An optional map timeout for the origin request lambda, defaulted to 10"
+  default     = 10
+}

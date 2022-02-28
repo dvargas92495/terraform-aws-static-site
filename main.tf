@@ -282,7 +282,7 @@ resource "aws_lambda_function" "origin_request" {
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
-  timeout          = 10
+  timeout          = var.origin_timeout
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
