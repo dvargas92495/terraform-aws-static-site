@@ -344,15 +344,17 @@ resource "aws_cloudfront_distribution" "cdn" {
       dynamic "lambda_function_association" {
         for_each = count.index == 0 ? [{
           event_type = "viewer-request", 
-          arn = aws_lambda_function.viewer_request.qualified_arn
+          arn = aws_lambda_function.viewer_request.qualified_arn,
+          include_body = false
         }, {
           event_type = "origin-request",
-          arn = aws_lambda_function.origin_request.qualified_arn
+          arn = aws_lambda_function.origin_request.qualified_arn,
+          include_body = true
         }] : []
         content {
           event_type   = lambda_function_association.value.event_type
           lambda_arn   = lambda_function_association.value.arn
-          include_body = false
+          include_body = lambda_function_association.value.include_body
         }
       }
     }
