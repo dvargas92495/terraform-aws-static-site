@@ -325,7 +325,7 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
 
     default_cache_behavior {
-      allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+      allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
       cached_methods         = ["GET", "HEAD", "OPTIONS"]
       target_origin_id       = format("S3-%s", local.all_domains[count.index])
       compress               = "true"
