@@ -285,6 +285,14 @@ resource "aws_lambda_function" "origin_request" {
   timeout          = var.origin_timeout
 }
 
+data "aws_cloudfront_cache_policy" "cache_policy" {
+  name = "Managed-CachingOptimized"
+}
+
+data "aws_cloudfront_origin_request_policy" "origin_policy" {
+  name = "Managed-AllViewer"
+}
+
 resource "aws_cloudfront_distribution" "cdn" {
     count           = length(local.all_domains)
     aliases         = [local.all_domains[count.index]]
@@ -325,22 +333,13 @@ resource "aws_cloudfront_distribution" "cdn" {
     }
 
     default_cache_behavior {
-      allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-      cached_methods         = ["GET", "HEAD", "OPTIONS"]
-      target_origin_id       = format("S3-%s", local.all_domains[count.index])
-      compress               = "true"
-      viewer_protocol_policy = "redirect-to-https"
-      min_ttl                = lookup(var.cdn_settings, "min_ttl", "0")
-      default_ttl            = lookup(var.cdn_settings, "default_ttl", "86400")
-      max_ttl                = lookup(var.cdn_settings, "max_ttl", "31536000")
-
-      forwarded_values {
-        query_string = false
-
-        cookies {
-          forward = "none"
-        }
-      }
+      allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+      cached_methods           = ["GET", "HEAD", "OPTIONS"]
+      target_origin_id         = format("S3-%s", local.all_domains[count.index])
+      compress                 = "true"
+      viewer_protocol_policy   = "redirect-to-https"
+      cache_policy_id          = data.aws_cloudfront_cache_policy.cache_policy.id
+      origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_policy.id
 
       dynamic "lambda_function_association" {
         for_each = count.index == 0 ? [{
