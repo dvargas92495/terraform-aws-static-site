@@ -286,7 +286,7 @@ resource "aws_lambda_function" "origin_request" {
 }
 
 data "aws_cloudfront_cache_policy" "cache_policy" {
-  name = "Managed-CachingOptimized"
+  name = "Managed-Amplify"
 }
 
 data "aws_cloudfront_origin_request_policy" "origin_policy" {
