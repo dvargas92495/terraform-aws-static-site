@@ -268,6 +268,10 @@ data "aws_cloudfront_origin_request_policy" "origin_policy" {
   name = "Managed-AllViewer"
 }
 
+resource "aws_cloudfront_origin_access_identity" "cdn" {
+  comment = "Identity for CloudFront only access"
+}
+
 resource "aws_cloudfront_distribution" "cdn" {
     count           = length(local.all_domains)
     aliases         = [local.all_domains[count.index]]
@@ -286,6 +290,10 @@ resource "aws_cloudfront_distribution" "cdn" {
         http_port              = "80"
         https_port             = "443"
         origin_ssl_protocols = ["TLSv1", "TLSv1.2"]
+      }
+
+      s3_origin_config {
+        origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
       }
     }
 
@@ -352,14 +360,12 @@ data "aws_iam_policy_document" "bucket_policy" {
       "s3:GetObject",
     ]
 
-    resources = [
-      "arn:aws:s3:::${local.primary_domain}/*",
-    ]
+    resources = ["${aws_s3_bucket.main.arn}/*"]
 
     principals {
       type        = "AWS"
       identifiers = [
-        "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_distribution.cdn[0].id}"
+        aws_cloudfront_origin_access_identity.cdn.iam_arn
       ]
     }
   }
