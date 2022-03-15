@@ -285,13 +285,6 @@ resource "aws_cloudfront_distribution" "cdn" {
       domain_name = count.index == 0 ? aws_s3_bucket.main.website_endpoint : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].website_endpoint
       origin_id   = format("S3-%s", local.all_domains[count.index])
 
-      custom_origin_config {
-        origin_protocol_policy = "http-only"
-        http_port              = "80"
-        https_port             = "443"
-        origin_ssl_protocols = ["TLSv1", "TLSv1.2"]
-      }
-
       s3_origin_config {
         origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
       }
