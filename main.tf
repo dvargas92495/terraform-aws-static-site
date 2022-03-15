@@ -282,12 +282,27 @@ resource "aws_cloudfront_distribution" "cdn" {
     tags            = var.tags
 
     origin {
-      domain_name = count.index == 0 ? aws_s3_bucket.main.bucket_domain_name : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].bucket_domain_name
       origin_id   = format("S3-%s", local.all_domains[count.index])
 
+      // START LEGACY
+      domain_name = count.index == 0 ? aws_s3_bucket.main.website_endpoint : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].website_endpoint
+      custom_origin_config {
+        origin_protocol_policy = "http-only"
+        http_port              = "80"
+        https_port             = "443"
+        origin_ssl_protocols = ["TLSv1", "TLSv1.2"]
+      }
+      custom_header {
+        name  = "Referer"
+        value = var.secret
+      }
+
+/*
+      domain_name = count.index == 0 ? aws_s3_bucket.main.bucket_domain_name : aws_s3_bucket.redirect[local.redirect_domains[count.index - 1]].bucket_domain_name
       s3_origin_config {
         origin_access_identity = aws_cloudfront_origin_access_identity.cdn.cloudfront_access_identity_path
       }
+*/ // END LEGACY
     }
 
     restrictions {
@@ -335,6 +350,35 @@ resource "aws_cloudfront_distribution" "cdn" {
     ]
 }
 
+// START LEGACY
+data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = ["${aws_s3_bucket.main.arn}/*"]
+
+    condition {
+      test     = "StringLike"
+      variable = "aws:Referer"
+
+      values = [var.secret]
+    }
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  bucket = aws_s3_bucket.main.id
+  policy = data.aws_iam_policy_document.bucket_policy.json
+}
+
+/*
 data "aws_iam_policy_document" "bucket_policy" {
   statement {
     actions = [
@@ -356,6 +400,8 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
   bucket = aws_s3_bucket.main.id
   policy = data.aws_iam_policy_document.bucket_policy.json
 }
+*/
+// END LEGACY
 
 resource "aws_route53_record" "A" {
     count   = length(local.all_domains)
