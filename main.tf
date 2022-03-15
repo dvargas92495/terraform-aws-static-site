@@ -37,30 +37,6 @@ data "aws_route53_zone" "zone" {
     name     = "${each.value}."
 }
 
-data "aws_iam_policy_document" "bucket_policy" {
-  statement {
-    actions = [
-      "s3:GetObject",
-    ]
-
-    resources = [
-      "arn:aws:s3:::${local.primary_domain}/*",
-    ]
-
-    condition {
-      test     = "StringEquals"
-      variable = "aws:UserAgent"
-
-      values = [var.secret]
-    }
-
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-  }
-}
-
 data "aws_iam_policy_document" "deploy_policy" {
     statement {
       actions = [
@@ -128,7 +104,6 @@ data "aws_iam_policy_document" "deploy_policy" {
 
 resource "aws_s3_bucket" "main" {
     bucket = local.primary_domain
-    policy = data.aws_iam_policy_document.bucket_policy.json
 
     website {
       index_document = var.index
@@ -312,11 +287,6 @@ resource "aws_cloudfront_distribution" "cdn" {
         https_port             = "443"
         origin_ssl_protocols = ["TLSv1", "TLSv1.2"]
       }
-
-      custom_header {
-        name  = "User-Agent"
-        value = var.secret
-      }
     }
 
     restrictions {
@@ -374,6 +344,30 @@ resource "aws_cloudfront_distribution" "cdn" {
     depends_on = [
       aws_acm_certificate_validation.cert
     ]
+}
+
+data "aws_iam_policy_document" "bucket_policy" {
+  statement {
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${local.primary_domain}/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = [
+        "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_distribution.cdn[0].id}"
+      ]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "bucket_policy" {
+  bucket = aws_s3_bucket.main.id
+  policy = data.aws_iam_policy_document.bucket_policy.json
 }
 
 resource "aws_route53_record" "A" {
