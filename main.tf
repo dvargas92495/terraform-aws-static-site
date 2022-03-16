@@ -258,6 +258,7 @@ resource "aws_lambda_function" "origin_request" {
   tags             = var.tags
   filename         = "origin-request.zip"
   timeout          = var.origin_timeout
+  memory_size      = var.origin_memory_size
 }
 
 data "aws_cloudfront_cache_policy" "cache_policy" {

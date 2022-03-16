@@ -64,6 +64,12 @@ variable "error_document" {
 
 variable "origin_timeout" {
   type        = number
-  description = "An optional map timeout for the origin request lambda, defaulted to 10"
+  description = "An optional timeout for the origin request lambda, defaulted to 10"
   default     = 10
+}
+
+variable "origin_memory_size" {
+  type        = number
+  description = "An optional memory size for the origin request lambda, defaulted to 256"
+  default     = 256
 }
