@@ -207,7 +207,6 @@ data "aws_iam_policy_document" "assume_lambda_edge_policy" {
     principals {
       type = "Service"
       identifiers = [
-        "lambda.amazonaws.com", 
         "edgelambda.amazonaws.com"
       ]
     }
@@ -223,6 +222,19 @@ data "aws_iam_policy_document" "lambda_logs_policy_doc" {
       "logs:PutLogEvents",
       "logs:CreateLogGroup",
       "lambda:InvokeFunction",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets",
+      "xray:GetSamplingStatisticSummaries"
+    ]
+    resources = [
+      "*"
     ]
   }
 }
@@ -259,6 +271,13 @@ resource "aws_lambda_function" "origin_request" {
   filename         = "origin-request.zip"
   timeout          = var.origin_timeout
   memory_size      = var.origin_memory_size
+
+  dynamic "tracing_config" {
+    for_each = var.enable_origin_xray ? ["Active"] : []
+    content {
+      mode = tracing_config.value
+    }
+  }
 }
 
 data "aws_cloudfront_cache_policy" "cache_policy" {

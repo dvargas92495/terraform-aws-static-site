@@ -26,6 +26,12 @@ variable "enable_iam_user" {
     default     = true
 }
 
+variable "enable_origin_xray" {
+  type          = string
+  description   = "Controls whether the origin lambda will include xray tracing"
+  default       = false
+}
+
 variable "cdn_settings" {
     type        = map(string)
     description = "A map containing configurable CloudFront CDN settings."
