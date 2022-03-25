@@ -224,19 +224,6 @@ data "aws_iam_policy_document" "lambda_logs_policy_doc" {
       "lambda:InvokeFunction",
     ]
   }
-  statement {
-    effect = "Allow"
-    actions = [
-      "xray:PutTraceSegments",
-      "xray:PutTelemetryRecords",
-      "xray:GetSamplingRules",
-      "xray:GetSamplingTargets",
-      "xray:GetSamplingStatisticSummaries"
-    ]
-    resources = [
-      "*"
-    ]
-  }
 }
 
 resource "aws_iam_role_policy" "logs_role_policy" {
@@ -271,17 +258,25 @@ resource "aws_lambda_function" "origin_request" {
   filename         = "origin-request.zip"
   timeout          = var.origin_timeout
   memory_size      = var.origin_memory_size
-
-  dynamic "tracing_config" {
-    for_each = var.enable_origin_xray ? ["Active"] : []
-    content {
-      mode = tracing_config.value
-    }
-  }
 }
 
-data "aws_cloudfront_cache_policy" "cache_policy" {
-  name = "Managed-Amplify"
+resource "aws_cloudfront_cache_policy" "cache_policy" {
+  name        = "remix-cache"
+  comment     = "Caching based on query parameters"
+  default_ttl = 60
+  max_ttl     = 31536000
+  min_ttl     = 1
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "all"
+    }
+  }
 }
 
 data "aws_cloudfront_origin_request_policy" "origin_policy" {
@@ -344,7 +339,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       target_origin_id         = format("S3-%s", local.all_domains[count.index])
       compress                 = "true"
       viewer_protocol_policy   = "redirect-to-https"
-      cache_policy_id          = data.aws_cloudfront_cache_policy.cache_policy.id
+      cache_policy_id          = aws_cloudfront_cache_policy.cache_policy.id
       origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_policy.id
 
       dynamic "lambda_function_association" {
