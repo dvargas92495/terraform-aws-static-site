@@ -9,6 +9,10 @@ terraform {
   }
 }
 
+data "aws_cloudfront_cache_policy" "cache_policy" {
+  name = "Managed-Amplify"
+}
+
 locals {
     domain_formatted = replace(var.domain, ".", "-")
     www_domain      = "www.${var.domain}"
@@ -28,6 +32,7 @@ locals {
     zone_domain_names = {
       for d in local.all_domains: d => join(".", slice(split(".", d), length(split(".", d)) - 2, length(split(".", d))))
     }
+    cache_policy_id = length(var.cache_policy_id) > 0 ? var.cache_policy_id : data.aws_cloudfront_cache_policy.cache_policy.id
 }
 
 data "aws_caller_identity" "current" {}
@@ -321,7 +326,7 @@ resource "aws_cloudfront_distribution" "cdn" {
       target_origin_id         = format("S3-%s", local.all_domains[count.index])
       compress                 = "true"
       viewer_protocol_policy   = "redirect-to-https"
-      cache_policy_id          = data.aws_cloudfront_cache_policy.cache_policy.id
+      cache_policy_id          = local.cache_policy_id
       origin_request_policy_id = data.aws_cloudfront_origin_request_policy.origin_policy.id
 
       dynamic "lambda_function_association" {
