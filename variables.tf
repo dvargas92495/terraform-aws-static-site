@@ -73,3 +73,13 @@ variable "origin_memory_size" {
   description = "An optional memory size for the origin request lambda, defaulted to 256"
   default     = 256
 }
+
+data "aws_cloudfront_cache_policy" "cache_policy" {
+  name = "Managed-Amplify"
+}
+
+variable "cache_policy_id" {
+  type        = string
+  description = "Identifier for the cache policy to use on the main CDN"
+  default     = data.aws_cloudfront_cache_policy.cache_policy
+}
