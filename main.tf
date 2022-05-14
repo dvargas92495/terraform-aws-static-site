@@ -18,7 +18,7 @@ locals {
     www_domain      = "www.${var.domain}"
     all_redirects   = flatten([
       for r in var.redirects: [r, "www.${r}"]
-    ]) 
+    ])
     all_domains      = concat(var.www_is_main ? [
       local.www_domain,
       var.domain
@@ -256,7 +256,7 @@ resource "aws_lambda_function" "viewer_request" {
   function_name    = "${local.domain_formatted}_viewer-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "viewer-request.handler"
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   publish          = true
   tags             = var.tags
   filename         = "viewer-request.zip"
@@ -266,7 +266,7 @@ resource "aws_lambda_function" "origin_request" {
   function_name    = "${local.domain_formatted}_origin-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "origin-request.handler"
-  runtime          = "nodejs14.x"
+  runtime          = "nodejs16.x"
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
