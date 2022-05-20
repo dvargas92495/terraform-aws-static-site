@@ -229,6 +229,8 @@ data "aws_iam_policy_document" "lambda_logs_policy_doc" {
       "cloudfront:ListDistributions",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
       "logs:PutLogEvents",
       "lambda:InvokeFunction",
       "s3:DeleteObject",
