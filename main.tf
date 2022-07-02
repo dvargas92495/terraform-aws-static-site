@@ -109,14 +109,24 @@ data "aws_iam_policy_document" "deploy_policy" {
 
 resource "aws_s3_bucket" "main" {
     bucket = local.primary_domain
+    force_destroy = true
 
-    website {
-      index_document = var.index
-      error_document = var.error_document
-    }
-    force_destroy = true 
+    tags = var.tags
+}
 
-    cors_rule {
+resource "aws_s3_bucket_website_configuration" "main_website" {
+  index_document {
+    suffix = var.index
+  }
+  error_document {
+    key = var.error_document
+  }
+  bucket = aws_s3_bucket.main
+}
+
+resource "aws_s3_bucket_cors_configuration" "main_cors" {
+  bucket = aws_s3_bucket.main
+  cors_rule {
       allowed_headers = [
         "*",
       ]
@@ -125,21 +135,22 @@ resource "aws_s3_bucket" "main" {
       ]
       allowed_origins = var.allowed_origins
       expose_headers  = []
-    }
-
-    tags = var.tags
+  }
 }
 
 resource "aws_s3_bucket" "redirect" {
     for_each = toset(local.redirect_domains)
     bucket = each.value
-
-    website {
-      redirect_all_requests_to = aws_s3_bucket.main.id
-    }
     force_destroy = true 
 
     tags = var.tags
+}
+
+resource "aws_s3_bucket_website_configuration" "redirect_website" {
+  bucket = aws_s3_bucket.redirect
+  redirect_all_requests_to {
+    host_name = aws_s3_bucket.main.id
+  }
 }
 
 resource "aws_acm_certificate" "cert" {
