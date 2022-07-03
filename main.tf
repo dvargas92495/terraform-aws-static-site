@@ -121,11 +121,11 @@ resource "aws_s3_bucket_website_configuration" "main_website" {
   error_document {
     key = var.error_document
   }
-  bucket = aws_s3_bucket.main
+  bucket = aws_s3_bucket.main.id
 }
 
 resource "aws_s3_bucket_cors_configuration" "main_cors" {
-  bucket = aws_s3_bucket.main
+  bucket = aws_s3_bucket.main.id
   cors_rule {
       allowed_headers = [
         "*",
@@ -147,7 +147,7 @@ resource "aws_s3_bucket" "redirect" {
 }
 
 resource "aws_s3_bucket_website_configuration" "redirect_website" {
-  bucket = aws_s3_bucket.redirect
+  bucket = aws_s3_bucket.redirect.id
   redirect_all_requests_to {
     host_name = aws_s3_bucket.main.id
   }
