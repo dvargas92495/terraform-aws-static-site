@@ -147,7 +147,8 @@ resource "aws_s3_bucket" "redirect" {
 }
 
 resource "aws_s3_bucket_website_configuration" "redirect_website" {
-  bucket = aws_s3_bucket.redirect.id
+  for_each = toset(local.redirect_domains)
+  bucket = aws_s3_bucket.redirect[each.value].id
   redirect_all_requests_to {
     host_name = aws_s3_bucket.main.id
   }
