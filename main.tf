@@ -99,6 +99,7 @@ data "aws_iam_policy_document" "deploy_policy" {
 
       resources = [
         aws_lambda_function.origin_request.arn,
+        aws_lambda_function.origin_response.arn,
         aws_lambda_function.viewer_request.arn,
       ]
     }
@@ -191,6 +192,16 @@ data "archive_file" "origin-request" {
   }
 }
 
+data "archive_file" "origin-response" {
+  type        = "zip"
+  output_path = "./origin-response.zip"
+
+  source {
+    content   = "module.exports.handler = (e, _, c) => c(null, e.Records[0].cf.response)"
+    filename  = "origin-response.js"
+  }
+}
+
 data "aws_iam_policy_document" "assume_lambda_edge_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -246,6 +257,16 @@ resource "aws_lambda_function" "origin_request" {
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
+}
+
+resource "aws_lambda_function" "origin_response" {
+  function_name    = "${local.domain_formatted}_origin-response"
+  role             = aws_iam_role.cloudfront_lambda.arn
+  handler          = "origin-response.handler"
+  runtime          = "nodejs12.x"
+  publish          = true
+  tags             = var.tags
+  filename         = "origin-response.zip"
 }
 
 resource "aws_cloudfront_distribution" "cdn" {
@@ -312,6 +333,9 @@ resource "aws_cloudfront_distribution" "cdn" {
         }, {
           event_type = "origin-request",
           arn = aws_lambda_function.origin_request.qualified_arn
+        }, {
+          event_type = "origin-response",
+          arn = aws_lambda_function.origin_response.qualified_arn
         }] : []
         content {
           event_type   = lambda_function_association.value.event_type
