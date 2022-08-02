@@ -2,3 +2,6 @@
 ./terraform/*
 .terraform*
 terraform.exe
+node_modules
+src
+lib

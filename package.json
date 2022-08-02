@@ -1,0 +1,36 @@
+{
+  "name": "@dvargas92495/aws-static-site",
+  "version": "0.1.0",
+  "description": "Prebuilt AWS Static Site Module for Terraform CDK (cdktf)",
+  "main": "lib/aws-static-site.js",
+  "types": "lib/aws-static-site.d.ts",
+  "scripts": {
+    "prebuild": "cdktf get",
+    "build": "tsc",
+    "test": "jest --passWithNoTests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dvargas92495/terraform-aws-static-site.git"
+  },
+  "keywords": [
+    "cdk",
+    "cdktf",
+    "aws",
+    "module",
+    "terraform"
+  ],
+  "author": "dvargas92495 <dvargas92495@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dvargas92495/terraform-aws-static-site/issues"
+  },
+  "homepage": "https://github.com/dvargas92495/terraform-aws-static-site#readme",
+  "devDependencies": {
+    "cdktf-cli": "^0.12.0",
+    "typescript": "^4.7.4"
+  },
+  "files": [
+    "/lib"
+  ]
+}

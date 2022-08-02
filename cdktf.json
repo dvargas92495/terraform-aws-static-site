@@ -1,0 +1,14 @@
+{
+  "language": "typescript",
+  "app": "echo noop",
+  "sendCrashReports": "false",
+  "terraformModules": [
+    {
+      "name": "aws-serverless-backend",
+      "source": "dvargas92495/serverless-backend/aws",
+      "version": "2.5.4"
+    }
+  ],
+  "codeMakerOutput": "src",
+  "projectId": "742a687e-6cae-490e-ae99-eb78761f4726"
+}
