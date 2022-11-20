@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/dvargas92495/terraform-aws-static-site#readme",
   "devDependencies": {
-    "cdktf-cli": "^0.12.0",
+    "cdktf-cli": "^0.14.1",
     "typescript": "^4.7.4"
   },
   "files": [
