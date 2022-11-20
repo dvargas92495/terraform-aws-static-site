@@ -150,7 +150,7 @@ resource "aws_s3_bucket_website_configuration" "redirect_website" {
   for_each = toset(local.redirect_domains)
   bucket = aws_s3_bucket.redirect[each.value].id
   redirect_all_requests_to {
-    host_name = aws_s3_bucket.main.id
+    host_name = local.primary_domain
   }
 }
 
@@ -270,7 +270,7 @@ resource "aws_lambda_function" "viewer_request" {
   function_name    = "${local.domain_formatted}_viewer-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "viewer-request.handler"
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   publish          = true
   tags             = var.tags
   filename         = "viewer-request.zip"
@@ -280,7 +280,7 @@ resource "aws_lambda_function" "origin_request" {
   function_name    = "${local.domain_formatted}_origin-request"
   role             = aws_iam_role.cloudfront_lambda.arn
   handler          = "origin-request.handler"
-  runtime          = "nodejs16.x"
+  runtime          = "nodejs18.x"
   publish          = true
   tags             = var.tags
   filename         = "origin-request.zip"
