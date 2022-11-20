@@ -1,6 +1,6 @@
 {
   "name": "@dvargas92495/aws-static-site",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Prebuilt AWS Static Site Module for Terraform CDK (cdktf)",
   "main": "lib/aws-static-site.js",
   "types": "lib/aws-static-site.d.ts",
