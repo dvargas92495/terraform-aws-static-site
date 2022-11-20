@@ -4,9 +4,9 @@
   "sendCrashReports": "false",
   "terraformModules": [
     {
-      "name": "aws-serverless-backend",
-      "source": "dvargas92495/serverless-backend/aws",
-      "version": "2.5.4"
+      "name": "aws-static-site",
+      "source": "dvargas92495/static-site/aws",
+      "version": "3.6.8"
     }
   ],
   "codeMakerOutput": "src",
